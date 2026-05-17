@@ -1,46 +1,46 @@
 %============================================================
-% BAB 5 — hasil konversi awal dari DOCX lama
+% BAB 5 — revisi penutup dengan batas klaim pseudo-label
 %============================================================
 \chapter{PENUTUP}
 
-Bab ini menyajikan kesimpulan dan saran berdasarkan hasil perancangan sistem, pelaksanaan eksperimen, serta analisis kinerja model deteksi potensi fraud/upcoding pada klaim JKN/BPJS dalam sistem INA-CBG. Kesimpulan disusun untuk menjawab permasalahan dan tujuan penelitian, sedangkan saran diberikan sebagai arahan pengembangan agar pendekatan yang dibangun dapat diuji dan disempurnakan pada penelitian berikutnya.
+Bab ini menyajikan kesimpulan dan saran berdasarkan hasil perancangan, eksperimen, dan analisis yang telah dilakukan. Penutup disusun dengan mempertahankan posisi penelitian sebagai kajian deteksi indikasi risiko \emph{fraud} atau \emph{upcoding} pada klaim JKN/BPJS, tetapi dengan batas interpretasi yang proporsional. Model yang dikembangkan tidak diposisikan sebagai sistem penetapan \emph{fraud} final, melainkan sebagai alat bantu analitis untuk mendukung prioritas verifikasi klaim.
 
-\section{KESIMPULAN}\label{kesimpulan}
+\section{Kesimpulan}\label{kesimpulan}
 
-Berdasarkan hasil penelitian yang telah dilakukan, diperoleh beberapa kesimpulan sebagai berikut.
+Berdasarkan hasil penelitian yang telah dilakukan, dapat disimpulkan beberapa hal sebagai berikut.
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\item
-  Deteksi potensi fraud/upcoding pada klaim JKN/BPJS dalam sistem INA-CBG merupakan permasalahan yang penting karena nilai klaim dipengaruhi oleh diagnosis, prosedur, tingkat keparahan, jenis layanan, dan komponen tarif. Dalam kondisi volume klaim yang besar, proses verifikasi membutuhkan dukungan analitik untuk membantu memprioritaskan klaim berisiko.
-\item
-  Penelitian ini mengajukan pendekatan machine learning berbasis claim-centric, yaitu menjadikan satu klaim sebagai unit analisis utama dan memperkaya klaim dengan data kepesertaan, diagnosis sekunder, serta histori layanan. Pendekatan ini dirancang agar pembacaan risiko tidak hanya bertumpu pada satu komponen biaya, tetapi pada konteks administratif, klinis, dan historis yang melekat pada klaim.
-\item
-  Orisinalitas penelitian ini terletak pada penyusunan pipeline deteksi potensi fraud/upcoding yang utuh pada konteks klaim JKN/BPJS, meliputi claim-centric data preparation, pseudo-labeling dengan Isolation Forest, branch-based feature selection, supervised benchmarking multi-model, threshold tuning, serta interpretabilitas global dan lokal.
-\item
-  Hasil eksperimen menunjukkan bahwa ketika label fraud aktual tidak tersedia, pseudo-label dapat dibentuk secara terukur dan digunakan sebagai target awal untuk supervised learning. Dari proses benchmarking, kombinasi XGBoost pada branch VIF dengan threshold 0,80 memberikan performa terbaik pada data uji terhadap target pseudo-label, dengan ROC-AUC 0,999876, PR-AUC 0,996046, F1-score 0,952511, precision 0,913917, recall 0,994507, dan MCC 0,951883.
-\item
-  Hasil interpretabilitas menunjukkan bahwa faktor biaya, tarif grouping, histori layanan nonkapitasi, special CMG, dan rasio tarif merupakan pendorong penting skor risiko. Temuan ini menunjukkan bahwa model tidak hanya menghasilkan prediksi, tetapi juga menyediakan dasar analitis yang dapat membantu pembacaan klaim berisiko.
-\item
-  Secara keseluruhan, sistem yang dibangun layak diposisikan sebagai alat bantu prioritisasi pemeriksaan klaim berisiko tinggi. Meskipun demikian, hasil penelitian tetap harus dipahami sebagai deteksi indikasi risiko berbasis pseudo-label, bukan sebagai pembuktian fraud aktual secara hukum atau audit resmi.
-\end{enumerate}
+Pertama, penelitian ini berhasil membangun workflow analitis berbasis \emph{machine learning} untuk mendeteksi indikasi risiko \emph{fraud} atau \emph{upcoding} pada klaim JKN/BPJS dalam sistem INA-CBG. Workflow tersebut menggunakan pendekatan \emph{claim-centric}, yaitu menempatkan satu klaim FKRTL sebagai unit analisis utama dan memperkayanya dengan informasi kepesertaan, diagnosis sekunder, histori layanan, fitur biaya, fitur klinis, serta fitur turunan yang relevan. Pendekatan ini memungkinkan klaim dianalisis sebagai satu entitas yang memuat konteks administratif, klinis, finansial, dan historis secara lebih utuh.
 
-\section{SARAN}\label{saran}
+Kedua, penelitian ini menunjukkan bahwa pseudo-labeling berbasis \emph{anomaly detection} dapat digunakan sebagai strategi metodologis ketika \emph{ground-truth fraud label} pada level klaim tidak tersedia. Pseudo-label yang dibentuk melalui \emph{Isolation Forest} berfungsi sebagai label proksi untuk merepresentasikan indikasi anomali atau risiko awal pada klaim. Dengan demikian, pseudo-label tidak diperlakukan sebagai bukti \emph{fraud} aktual, melainkan sebagai target awal yang memungkinkan proses \emph{supervised benchmarking} dilakukan secara terukur.
 
-Berdasarkan hasil dan keterbatasan penelitian, beberapa saran untuk pengembangan penelitian berikutnya adalah sebagai berikut.
+Ketiga, hasil \emph{supervised benchmarking} menunjukkan bahwa model \emph{machine learning} dapat mempelajari pola yang terkandung dalam pseudo-label dan menghasilkan skor risiko yang dapat digunakan untuk mendukung prioritas verifikasi klaim. Model final yang dipilih berdasarkan proses benchmarking dan \emph{threshold tuning} menunjukkan performa yang kuat terhadap pseudo-label pada data uji. Namun, performa tersebut harus ditafsirkan secara proporsional sebagai kemampuan model dalam mempelajari pola label proksi, bukan sebagai bukti bahwa model mampu menetapkan \emph{fraud} aktual secara final.
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\item
-  Penelitian berikutnya disarankan melakukan validasi menggunakan label hasil audit atau verifikasi resmi. Pada penelitian ini, target pembelajaran dibentuk melalui pseudo-label karena label fraud aktual pada level klaim tidak tersedia. Oleh karena itu, pengujian terhadap label audit resmi diperlukan untuk mengetahui kesesuaian skor risiko model dengan keputusan ahli, serta untuk membedakan lebih jelas antara klaim yang benar-benar bermasalah, klaim yang hanya anomali secara data, dan klaim yang valid tetapi memiliki karakteristik tidak umum.
-\item
-  Cakupan data dapat diperluas pada periode, wilayah, dan jenis fasilitas kesehatan yang lebih beragam. Pengujian lintas periode diperlukan untuk melihat kestabilan pola risiko dari waktu ke waktu, sedangkan pengujian lintas wilayah dan fasilitas kesehatan diperlukan untuk menilai apakah model tetap konsisten pada variasi karakteristik rumah sakit, komposisi pasien, pola layanan, dan struktur klaim yang berbeda.
-\item
-  Penelitian lanjutan dapat menambahkan data klinis dan administratif yang lebih lengkap, seperti ringkasan rekam medis, hasil verifikasi klaim, catatan dispute, catatan revisi kode, serta informasi pendukung dari proses koding. Pengayaan data tersebut dapat membantu model membedakan klaim yang memang memiliki kebutuhan klinis kompleks dari klaim yang memiliki indikasi risiko upcoding, sehingga interpretasi hasil deteksi menjadi lebih kuat.
-\item
-  Sistem perlu diuji dalam skenario operasional bersama auditor atau verifikator klaim. Pengujian tersebut penting untuk menilai apakah daftar klaim berisiko tinggi, skor risiko, dan penjelasan faktor prediksi benar-benar membantu proses prioritisasi pemeriksaan. Evaluasi operasional juga dapat mengukur aspek kegunaan sistem, seperti kemudahan membaca hasil, waktu yang dibutuhkan untuk meninjau klaim, dan kesesuaian keluaran model dengan kebutuhan kerja verifikasi.
-\item
-  Pengembangan selanjutnya dapat diarahkan pada dashboard monitoring yang menampilkan skor risiko, peringkat klaim berisiko tinggi, faktor pendorong prediksi, serta ringkasan interpretabilitas global dan lokal. Dashboard tersebut sebaiknya tidak hanya menampilkan label prediksi, tetapi juga menyediakan alasan analitis yang dapat ditelusuri oleh pengguna. Dengan demikian, hasil model dapat digunakan sebagai pendukung keputusan yang transparan dan tetap menempatkan auditor atau verifikator sebagai pihak yang melakukan penilaian akhir.
-\end{enumerate}
+Keempat, penelitian ini menegaskan pentingnya pemahaman \emph{leakage-aware evaluation} dalam eksperimen berbasis pseudo-label. Apabila fitur yang digunakan untuk membentuk pseudo-label memiliki tumpang tindih kuat dengan fitur yang digunakan pada tahap \emph{supervised prediction}, maka performa model yang sangat tinggi perlu dibaca secara hati-hati karena sebagian performa dapat mencerminkan kemampuan model merekonstruksi pola pembentukan pseudo-label. Oleh karena itu, pemisahan peran fitur, pembacaan metrik secara proporsional, dan pembatasan klaim menjadi bagian penting dari kontribusi metodologis penelitian ini.
 
-\emph{(Halaman ini sengaja dikosongkan)}
+Kelima, penelitian ini memberikan nilai tambah melalui \emph{threshold tuning} dan interpretabilitas model. \emph{Threshold tuning} digunakan untuk mengubah skor risiko menjadi mekanisme prioritas verifikasi, bukan sebagai batas absolut penetapan \emph{fraud}. Sementara itu, \emph{feature importance}, SHAP, PDP, dan LIME digunakan untuk menjelaskan faktor yang berkontribusi terhadap prediksi model, baik secara global maupun lokal. Interpretabilitas tersebut mendukung posisi model sebagai alat bantu analitis bagi proses audit atau verifikasi, karena pengguna dapat menelusuri alasan suatu klaim diprioritaskan.
+
+Secara keseluruhan, kontribusi utama penelitian ini bukan terletak pada penetapan \emph{fraud} final, melainkan pada penyusunan workflow \emph{claim-centric} yang menggabungkan integrasi data klaim, pseudo-labeling, \emph{supervised benchmarking}, \emph{threshold-based triage}, dan \emph{explainability}. Workflow tersebut dapat digunakan untuk mendukung identifikasi klaim dengan indikasi risiko \emph{fraud}/\emph{upcoding} dan membantu penyusunan prioritas verifikasi klaim secara lebih terstruktur, terukur, dan dapat dijelaskan.
+
+\section{Saran}\label{saran}
+
+Berdasarkan hasil dan keterbatasan penelitian, beberapa saran pengembangan yang dapat dilakukan pada penelitian selanjutnya adalah sebagai berikut.
+
+Pertama, penelitian selanjutnya disarankan menggunakan label audit, hasil verifikasi resmi, atau validasi pakar sebagai \emph{ground truth} yang lebih kuat. Dengan adanya label aktual, performa model dapat dievaluasi tidak hanya terhadap pseudo-label, tetapi juga terhadap status \emph{fraud} atau ketidaksesuaian klaim yang telah diverifikasi secara independen.
+
+Kedua, validasi lanjutan perlu dilakukan bersama auditor, verifikator klaim, atau pihak yang memahami proses pemeriksaan klaim INA-CBG. Validasi ini penting untuk menilai apakah klaim yang diprioritaskan oleh model benar-benar relevan secara operasional dan layak ditindaklanjuti dalam proses verifikasi.
+
+Ketiga, penelitian berikutnya dapat mengembangkan evaluasi yang lebih ketat terhadap risiko \emph{leakage}, misalnya dengan membandingkan konfigurasi fitur yang \emph{overlap} dan \emph{disjoint} secara eksplisit. Pendekatan ini dapat membantu membedakan performa yang berasal dari rekonstruksi pseudo-label dan performa yang lebih mencerminkan kemampuan generalisasi model terhadap sinyal risiko.
+
+Keempat, pengembangan dataset dapat dilakukan dengan menambahkan fitur kontekstual yang lebih kaya, seperti informasi kronologi pelayanan, riwayat diagnosis yang lebih panjang, karakteristik fasilitas kesehatan, pola rujukan, atau informasi klinis tambahan yang relevan. Pengayaan fitur tersebut dapat membantu model membaca pola risiko secara lebih komprehensif.
+
+Kelima, evaluasi temporal atau lintas periode disarankan apabila data tersedia. Pengujian pada periode waktu yang berbeda dapat membantu menilai stabilitas model terhadap perubahan pola klaim, perubahan regulasi, perubahan tarif, atau perubahan perilaku fasilitas kesehatan.
+
+Keenam, dari sisi pemodelan, penelitian selanjutnya dapat mengeksplorasi metode tambahan seperti model tabular modern, pendekatan \emph{semi-supervised learning}, \emph{graph-based learning}, atau \emph{deep tabular model}. Namun, eksplorasi model baru tetap perlu disertai desain evaluasi yang hati-hati agar peningkatan performa tidak berasal dari \emph{leakage} atau \emph{target reconstruction}.
+
+Ketujuh, untuk pengembangan praktis, workflow yang dihasilkan dapat diuji sebagai prototipe sistem prioritisasi verifikasi klaim. Pengujian tersebut sebaiknya tidak langsung diarahkan pada keputusan \emph{fraud} final, tetapi pada kegunaan model dalam membantu menyusun daftar klaim prioritas, mengurangi beban pemeriksaan awal, dan menyediakan penjelasan yang dapat digunakan oleh verifikator.
+
+\section{Batas Klaim Akhir}\label{batas-klaim-akhir}
+
+Sebagai penutup, perlu ditegaskan bahwa penelitian ini tetap berada dalam ruang lingkup \emph{fraud detection} pada klaim kesehatan, tetapi keluaran model diposisikan secara hati-hati sebagai deteksi indikasi risiko atau anomali klaim. Pseudo-label yang digunakan dalam eksperimen merupakan label proksi, bukan \emph{ground-truth fraud}. Oleh karena itu, hasil evaluasi model tidak dapat disimpulkan sebagai akurasi deteksi \emph{fraud} aktual, melainkan sebagai kemampuan model dalam mempelajari dan memprioritaskan pola risiko yang didefinisikan melalui pseudo-labeling.
+
+Keputusan akhir mengenai status \emph{fraud} tetap memerlukan proses verifikasi, audit, dan penilaian pihak yang berwenang. Dengan batasan tersebut, hasil penelitian ini diharapkan dapat menjadi dasar awal untuk pengembangan sistem pendukung keputusan audit yang lebih kuat, terutama apabila pada penelitian selanjutnya tersedia label audit aktual dan proses validasi operasional yang lebih lengkap.
