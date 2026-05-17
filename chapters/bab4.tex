@@ -158,9 +158,12 @@ Eksperimen melakukan sensitivity analysis terhadap beberapa nilai \emph{contamin
 
 Konfigurasi akhir menggunakan contamination rate 0,03 sehingga menghasilkan 50.977 klaim anomali atau sekitar 3\% dari total klaim. Proporsi ini menunjukkan bahwa pseudo-label positif merupakan kelompok minoritas, selaras dengan karakter umum deteksi risiko atau anomali.
 
-\includegraphics[width=5.51181in,height=1.94306in]{media/media/image15.png}
-
-\phantomsection\label{fig:profil-median-pseudo-label}{}Gambar 4.1 Profil Median Pseudo-Label
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image15.png}
+  \caption{Profil Median Pseudo-Label}
+  \label{fig:profil-median-pseudo-label}
+\end{figure}
 
 Profil median pada Gambar 4.1 menunjukkan bahwa klaim pseudo-positif memiliki pola yang berbeda dari klaim non-anomali pada beberapa fitur biaya dan histori layanan. Perbedaan ini mengindikasikan bahwa pseudo-label tidak terbentuk secara acak, melainkan mengikuti pola numerik tertentu pada data. Namun, pola tersebut tetap hanya menunjukkan indikasi anomali, bukan bukti \emph{fraud} aktual.
 
@@ -217,9 +220,12 @@ Jumlah fitur & 27 & Fitur supervised pada branch terpilih \\
 Best threshold & 0,80 & Ambang operasional untuk prioritas verifikasi \\
 \end{longtable}
 
-\includegraphics[width=5.51181in,height=3.0375in]{media/media/image16.png}
-
-\phantomsection\label{fig:threshold-tuning-bab4}{}Gambar 4.2 Kurva Threshold Tuning
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image16.png}
+  \caption{Kurva Threshold Tuning}
+  \label{fig:threshold-tuning-bab4}
+\end{figure}
 
 Threshold tuning diperlukan karena tujuan penelitian bukan sekadar menghasilkan skor probabilitas, tetapi mengubah skor tersebut menjadi daftar klaim prioritas. Threshold yang lebih rendah meningkatkan cakupan klaim yang diprioritaskan, tetapi dapat menambah beban verifikator. Sebaliknya, threshold yang lebih tinggi menghasilkan daftar prioritas yang lebih selektif, tetapi berpotensi melewatkan sebagian klaim yang memiliki indikasi risiko.
 
@@ -248,17 +254,26 @@ Berdasarkan Tabel \ref{tab:final-metrics-test}, model final menghasilkan nilai R
 
 Namun, interpretasi hasil tersebut harus dibatasi. Nilai metrik yang tinggi tidak membuktikan bahwa model telah mendeteksi \emph{fraud} aktual secara final, karena target evaluasi yang digunakan adalah pseudo-label. Hasil ini lebih tepat dipahami sebagai bukti bahwa model sangat konsisten dalam mempelajari pola yang terkandung dalam pseudo-label. Jika terdapat overlap antara fitur pembentuk pseudo-label dan fitur prediksi supervised, sebagian performa dapat mencerminkan target reconstruction atau rekonstruksi pola pelabelan.
 
-\includegraphics[width=5.51181in,height=4.65in]{media/media/image17.png}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image17.png}
+  \caption{Confusion Matrix Model Final}
+  \label{fig:confusion-matrix-bab4}
+\end{figure}
 
-\phantomsection\label{fig:confusion-matrix-bab4}{}Gambar 4.3 Confusion Matrix Model Final
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{media/media/image18.png}
+  \caption{ROC Curve Model Final}
+  \label{fig:roc-curve-bab4}
+\end{figure}
 
-\includegraphics[width=4.93333in,height=4.09733in]{media/media/image18.png}
-
-\phantomsection\label{fig:roc-curve-bab4}{}Gambar 4.4 ROC Curve Model Final
-
-\includegraphics[width=4.87634in,height=4.05in]{media/media/image19.png}
-
-\phantomsection\label{fig:pr-curve-bab4}{}Gambar 4.5 Precision-Recall Curve Model Final
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{media/media/image19.png}
+  \caption{Precision-Recall Curve Model Final}
+  \label{fig:pr-curve-bab4}
+\end{figure}
 
 Confusion matrix, ROC curve, dan precision-recall curve menunjukkan bahwa model final bekerja sangat kuat terhadap target pseudo-label pada data test. Namun, karena target tersebut belum divalidasi sebagai \emph{fraud} aktual, hasil evaluasi ini tetap harus dipahami sebagai performa terhadap label proksi, bukan sebagai akurasi deteksi \emph{fraud} final.
 
@@ -270,35 +285,56 @@ Interpretabilitas digunakan untuk memahami faktor yang memengaruhi skor risiko m
 
 Feature importance dan SHAP digunakan untuk membaca kontribusi fitur secara global. Hasil interpretasi menunjukkan bahwa fitur biaya dan histori layanan memiliki peran penting dalam keputusan model, antara lain tarif grouping, tarif disetujui, histori nonkapitasi, dan rasio turunan. Pola ini menunjukkan bahwa model membaca risiko dari kombinasi komponen biaya dan histori layanan, bukan dari satu variabel tunggal.
 
-\includegraphics[width=5.51181in,height=4.11597in]{media/media/image20.png}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image20.png}
+  \caption{Feature Importance Model Final}
+  \label{fig:feature-importance-bab4}
+\end{figure}
 
-\phantomsection\label{fig:feature-importance-bab4}{}Gambar 4.6 Feature Importance Model Final
-
-\includegraphics[width=5.51181in,height=4.68125in]{media/media/image21.png}
-
-\phantomsection\label{fig:shap-summary-bab4}{}Gambar 4.7 SHAP Summary Plot
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image21.png}
+  \caption{SHAP Summary Plot}
+  \label{fig:shap-summary-bab4}
+\end{figure}
 
 PDP digunakan untuk melihat pola hubungan rata-rata antara fitur dominan dan probabilitas prediksi model. Fitur yang dianalisis mencakup tarif grouping, total biaya histori nonkapitasi, jumlah histori nonkapitasi, tarif disetujui, dan rata-rata biaya histori nonkapitasi.
 
-\includegraphics[width=5.51181in,height=3.64861in]{media/media/image22.png}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image22.png}
+  \caption{PDP \texttt{tarif\_grouping}}
+  \label{fig:pdp-tarif-grouping-bab4}
+\end{figure}
 
-\phantomsection\label{fig:pdp-tarif-grouping-bab4}{}Gambar 4.8 PDP tarif\_grouping
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image23.png}
+  \caption{PDP \texttt{nonkap\_hist\_total\_amount\_before}}
+  \label{fig:pdp-nonkap-total-bab4}
+\end{figure}
 
-\includegraphics[width=5.51181in,height=3.64375in]{media/media/image23.png}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image24.png}
+  \caption{PDP \texttt{nonkap\_hist\_count\_before}}
+  \label{fig:pdp-nonkap-count-bab4}
+\end{figure}
 
-\phantomsection\label{fig:pdp-nonkap-total-bab4}{}Gambar 4.9 PDP nonkap\_hist\_total\_amount\_before
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image25.png}
+  \caption{PDP \texttt{tarif\_disetujui}}
+  \label{fig:pdp-tarif-disetujui-bab4}
+\end{figure}
 
-\includegraphics[width=5.51181in,height=3.64375in]{media/media/image24.png}
-
-\phantomsection\label{fig:pdp-nonkap-count-bab4}{}Gambar 4.10 PDP nonkap\_hist\_count\_before
-
-\includegraphics[width=5.51181in,height=3.64861in]{media/media/image25.png}
-
-\phantomsection\label{fig:pdp-tarif-disetujui-bab4}{}Gambar 4.11 PDP tarif\_disetujui
-
-\includegraphics[width=5.51181in,height=3.64375in]{media/media/image26.png}
-
-\phantomsection\label{fig:pdp-nonkap-mean-bab4}{}Gambar 4.12 PDP nonkap\_hist\_mean\_amount\_before
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image26.png}
+  \caption{PDP \texttt{nonkap\_hist\_mean\_amount\_before}}
+  \label{fig:pdp-nonkap-mean-bab4}
+\end{figure}
 
 Interpretasi global membantu memahami pola yang dipelajari model, tetapi tidak boleh diperlakukan sebagai bukti kausal. Feature importance, SHAP, dan PDP menjelaskan kontribusi fitur terhadap prediksi model, bukan membuktikan bahwa fitur tertentu menyebabkan \emph{fraud}.
 
@@ -323,17 +359,26 @@ Local explanation dilakukan menggunakan LIME pada beberapa klaim dengan skor ris
 3 & 397950224V011829 & 1,0000 & Tarif grouping, lama rawat, diagnosis sekunder, tarif disetujui \\
 \end{longtable}
 
-\includegraphics[width=5.51181in,height=3.41875in]{media/media/image27.png}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image27.png}
+  \caption{Hasil LIME pada Klaim 10241124V003022}
+  \label{fig:lime-claim-1-bab4}
+\end{figure}
 
-\phantomsection\label{fig:lime-claim-1-bab4}{}Gambar 4.13 Hasil LIME pada Klaim 10241124V003022
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image28.png}
+  \caption{Hasil LIME pada Klaim 452460624V011711}
+  \label{fig:lime-claim-2-bab4}
+\end{figure}
 
-\includegraphics[width=5.51181in,height=3.41875in]{media/media/image28.png}
-
-\phantomsection\label{fig:lime-claim-2-bab4}{}Gambar 4.14 Hasil LIME pada Klaim 452460624V011711
-
-\includegraphics[width=5.51181in,height=3.41875in]{media/media/image29.png}
-
-\phantomsection\label{fig:lime-claim-3-bab4}{}Gambar 4.15 Hasil LIME pada Klaim 397950224V011829
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{media/media/image29.png}
+  \caption{Hasil LIME pada Klaim 397950224V011829}
+  \label{fig:lime-claim-3-bab4}
+\end{figure}
 
 Hasil LIME menunjukkan bahwa klaim dengan skor risiko tinggi umumnya dipengaruhi oleh kombinasi fitur biaya, histori layanan, tarif grouping, rasio tarif, dan indikator klinis tertentu. Hal ini mendukung fungsi model sebagai alat bantu prioritisasi karena pengguna dapat melihat faktor yang mendorong suatu klaim masuk ke daftar tinjauan. Namun, penjelasan lokal tetap merupakan interpretasi model, bukan keputusan audit final.
 
