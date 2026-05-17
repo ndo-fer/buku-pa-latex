@@ -1,0 +1,46 @@
+%============================================================
+% BAB 5 — hasil konversi awal dari DOCX lama
+%============================================================
+\chapter{PENUTUP}
+
+Bab ini menyajikan kesimpulan dan saran berdasarkan hasil perancangan sistem, pelaksanaan eksperimen, serta analisis kinerja model deteksi potensi fraud/upcoding pada klaim JKN/BPJS dalam sistem INA-CBG. Kesimpulan disusun untuk menjawab permasalahan dan tujuan penelitian, sedangkan saran diberikan sebagai arahan pengembangan agar pendekatan yang dibangun dapat diuji dan disempurnakan pada penelitian berikutnya.
+
+\section{KESIMPULAN}\label{kesimpulan}
+
+Berdasarkan hasil penelitian yang telah dilakukan, diperoleh beberapa kesimpulan sebagai berikut.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Deteksi potensi fraud/upcoding pada klaim JKN/BPJS dalam sistem INA-CBG merupakan permasalahan yang penting karena nilai klaim dipengaruhi oleh diagnosis, prosedur, tingkat keparahan, jenis layanan, dan komponen tarif. Dalam kondisi volume klaim yang besar, proses verifikasi membutuhkan dukungan analitik untuk membantu memprioritaskan klaim berisiko.
+\item
+  Penelitian ini mengajukan pendekatan machine learning berbasis claim-centric, yaitu menjadikan satu klaim sebagai unit analisis utama dan memperkaya klaim dengan data kepesertaan, diagnosis sekunder, serta histori layanan. Pendekatan ini dirancang agar pembacaan risiko tidak hanya bertumpu pada satu komponen biaya, tetapi pada konteks administratif, klinis, dan historis yang melekat pada klaim.
+\item
+  Orisinalitas penelitian ini terletak pada penyusunan pipeline deteksi potensi fraud/upcoding yang utuh pada konteks klaim JKN/BPJS, meliputi claim-centric data preparation, pseudo-labeling dengan Isolation Forest, branch-based feature selection, supervised benchmarking multi-model, threshold tuning, serta interpretabilitas global dan lokal.
+\item
+  Hasil eksperimen menunjukkan bahwa ketika label fraud aktual tidak tersedia, pseudo-label dapat dibentuk secara terukur dan digunakan sebagai target awal untuk supervised learning. Dari proses benchmarking, kombinasi XGBoost pada branch VIF dengan threshold 0,80 memberikan performa terbaik pada data uji terhadap target pseudo-label, dengan ROC-AUC 0,999876, PR-AUC 0,996046, F1-score 0,952511, precision 0,913917, recall 0,994507, dan MCC 0,951883.
+\item
+  Hasil interpretabilitas menunjukkan bahwa faktor biaya, tarif grouping, histori layanan nonkapitasi, special CMG, dan rasio tarif merupakan pendorong penting skor risiko. Temuan ini menunjukkan bahwa model tidak hanya menghasilkan prediksi, tetapi juga menyediakan dasar analitis yang dapat membantu pembacaan klaim berisiko.
+\item
+  Secara keseluruhan, sistem yang dibangun layak diposisikan sebagai alat bantu prioritisasi pemeriksaan klaim berisiko tinggi. Meskipun demikian, hasil penelitian tetap harus dipahami sebagai deteksi indikasi risiko berbasis pseudo-label, bukan sebagai pembuktian fraud aktual secara hukum atau audit resmi.
+\end{enumerate}
+
+\section{SARAN}\label{saran}
+
+Berdasarkan hasil dan keterbatasan penelitian, beberapa saran untuk pengembangan penelitian berikutnya adalah sebagai berikut.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Penelitian berikutnya disarankan melakukan validasi menggunakan label hasil audit atau verifikasi resmi. Pada penelitian ini, target pembelajaran dibentuk melalui pseudo-label karena label fraud aktual pada level klaim tidak tersedia. Oleh karena itu, pengujian terhadap label audit resmi diperlukan untuk mengetahui kesesuaian skor risiko model dengan keputusan ahli, serta untuk membedakan lebih jelas antara klaim yang benar-benar bermasalah, klaim yang hanya anomali secara data, dan klaim yang valid tetapi memiliki karakteristik tidak umum.
+\item
+  Cakupan data dapat diperluas pada periode, wilayah, dan jenis fasilitas kesehatan yang lebih beragam. Pengujian lintas periode diperlukan untuk melihat kestabilan pola risiko dari waktu ke waktu, sedangkan pengujian lintas wilayah dan fasilitas kesehatan diperlukan untuk menilai apakah model tetap konsisten pada variasi karakteristik rumah sakit, komposisi pasien, pola layanan, dan struktur klaim yang berbeda.
+\item
+  Penelitian lanjutan dapat menambahkan data klinis dan administratif yang lebih lengkap, seperti ringkasan rekam medis, hasil verifikasi klaim, catatan dispute, catatan revisi kode, serta informasi pendukung dari proses koding. Pengayaan data tersebut dapat membantu model membedakan klaim yang memang memiliki kebutuhan klinis kompleks dari klaim yang memiliki indikasi risiko upcoding, sehingga interpretasi hasil deteksi menjadi lebih kuat.
+\item
+  Sistem perlu diuji dalam skenario operasional bersama auditor atau verifikator klaim. Pengujian tersebut penting untuk menilai apakah daftar klaim berisiko tinggi, skor risiko, dan penjelasan faktor prediksi benar-benar membantu proses prioritisasi pemeriksaan. Evaluasi operasional juga dapat mengukur aspek kegunaan sistem, seperti kemudahan membaca hasil, waktu yang dibutuhkan untuk meninjau klaim, dan kesesuaian keluaran model dengan kebutuhan kerja verifikasi.
+\item
+  Pengembangan selanjutnya dapat diarahkan pada dashboard monitoring yang menampilkan skor risiko, peringkat klaim berisiko tinggi, faktor pendorong prediksi, serta ringkasan interpretabilitas global dan lokal. Dashboard tersebut sebaiknya tidak hanya menampilkan label prediksi, tetapi juga menyediakan alasan analitis yang dapat ditelusuri oleh pengguna. Dengan demikian, hasil model dapat digunakan sebagai pendukung keputusan yang transparan dan tetap menempatkan auditor atau verifikator sebagai pihak yang melakukan penilaian akhir.
+\end{enumerate}
+
+\emph{(Halaman ini sengaja dikosongkan)}

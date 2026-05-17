@@ -1,0 +1,82 @@
+%============================================================
+% TEMPLATE PROYEK AKHIR — PENS
+% Politeknik Elektronika Negeri Surabaya
+% Berdasarkan Panduan Buku PA Sarjana Terapan A4 Rev05
+%============================================================
+% CARA PENGGUNAAN:
+%   1. Buka config/variables.tex dan isi semua data Anda.
+%   2. Tulis konten di folder chapters/ dan pages/.
+%   3. Compile file ini (main.tex) dengan pdflatex + bibtex.
+%============================================================
+
+\documentclass[12pt, a4paper, twoside, openright, fleqn]{report}
+
+% ── Konfigurasi (urutan penting: variables → packages → formatting) ──
+\input{config/variables}
+\input{config/packages}
+\input{config/formatting}
+
+%============================================================
+\begin{document}
+%============================================================
+
+% ── Halaman Sampul & Judul ───────────────────────────────────
+\input{pages/cover}
+\input{pages/halaman_judul}
+\input{pages/pengesahan}
+
+% ── Halaman Prelim (penomoran romawi kecil) ──────────────────
+\cleardoublepage
+\pagestyle{fancy}
+\pagenumbering{roman}
+\setcounter{page}{1}
+\onehalfspacing
+
+\input{pages/orisinalitas}
+\input{pages/hak_cipta}
+\input{pages/abstrak}
+\input{pages/abstract}
+\input{pages/kata_pengantar}
+
+% ── Daftar Isi, Gambar, Tabel ────────────────────────────────
+\cleardoublepage
+\tableofcontents
+
+\cleardoublepage
+\begingroup
+\renewcommand*{\addvspace}[1]{} % Hapus spasi ekstra antar entri
+\listoffigures
+\endgroup
+\addcontentsline{toc}{chapter}{DAFTAR GAMBAR}
+
+\cleardoublepage
+\begingroup
+\renewcommand*{\addvspace}[1]{}
+\listoftables
+\endgroup
+\addcontentsline{toc}{chapter}{DAFTAR TABEL}
+
+% ── Isi Utama (penomoran Arab dimulai dari 1) ─────────────────
+\cleardoublepage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{chapters/bab1}
+\input{chapters/bab2}
+\input{chapters/bab3}
+\input{chapters/bab4}
+\input{chapters/bab5}
+
+% ── Daftar Pustaka ───────────────────────────────────────────
+\cleardoublepage
+\addcontentsline{toc}{chapter}{DAFTAR PUSTAKA}
+\renewcommand{\bibname}{DAFTAR PUSTAKA}
+\bibliographystyle{IEEEtranN}
+\bibliography{references}
+
+% ── Lampiran ─────────────────────────────────────────────────
+\input{pages/lampiran}
+
+%============================================================
+\end{document}
+%============================================================
