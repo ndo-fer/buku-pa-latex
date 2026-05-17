@@ -1,0 +1,114 @@
+%============================================================
+% BAB 1 — PENDAHULUAN
+% Revisi pivot sedang: fraud detection sebagai konteks, keluaran model sebagai indikasi risiko/prioritas verifikasi.
+%============================================================
+\chapter{PENDAHULUAN}
+
+\section{LATAR BELAKANG}
+
+Program Jaminan Kesehatan Nasional (JKN) merupakan sistem jaminan sosial kesehatan yang bertujuan memperluas akses masyarakat terhadap layanan kesehatan. Pada fasilitas kesehatan rujukan tingkat lanjutan (FKRTL), pembayaran layanan dilakukan menggunakan sistem Indonesian Case-Based Groups (INA-CBG), yaitu sistem pembayaran berbasis kelompok kasus dalam penyelenggaraan JKN \citep{kemenkes2014,kemenkes2016}. Dalam sistem ini, nilai klaim tidak dihitung berdasarkan setiap tindakan secara terpisah, melainkan ditentukan melalui proses \textit{grouping} yang mempertimbangkan diagnosis, prosedur, karakteristik layanan, dan tingkat keparahan kasus \citep{kemenkes2016}.
+
+Skala layanan JKN yang besar membuat proses verifikasi klaim membutuhkan dukungan mekanisme prioritisasi berbasis data. Hingga 30 November 2025, pemanfaatan layanan kesehatan JKN telah mencapai 664,3 juta kunjungan dengan total beban jaminan sebesar Rp172,6 triliun, sehingga pemeriksaan klaim perlu diarahkan pada klaim yang memiliki indikasi risiko lebih tinggi \citep{djsn2025monthly}. Besarnya volume layanan tersebut memperkuat kebutuhan terhadap pendekatan analitis yang dapat membantu menyaring klaim untuk pemeriksaan lebih lanjut.
+
+Ketergantungan nilai klaim terhadap diagnosis, prosedur, \textit{severity level}, dan hasil \textit{grouping} membuat ketepatan dokumentasi serta pengkodean menjadi aspek penting. Dalam konteks ini, \textit{upcoding} dipahami sebagai perubahan atau penggunaan kode diagnosis maupun prosedur yang menghasilkan tarif lebih tinggi daripada kondisi yang seharusnya \citep{maryana2024}. Risiko tersebut berkaitan dengan struktur insentif sistem pembayaran berbasis kelompok kasus, karena perubahan tarif dapat memengaruhi perilaku pengkodean rumah sakit dan mendorong kecenderungan pengodean pada tingkat keparahan yang lebih tinggi \citep{chalkley2022,crespin2024}.
+
+Dalam literatur asuransi kesehatan, \textit{fraud} dipahami sebagai tindakan penipuan, penyimpangan, atau misrepresentasi yang dilakukan untuk memperoleh manfaat yang tidak semestinya dari sistem pembiayaan kesehatan \citep{villegas2021,timofeyev2022}. Pada konteks JKN, potensi penyimpangan dapat muncul melalui manipulasi prosedur medis, pemalsuan dokumen, penggunaan identitas fiktif, upcoding, maupun moral hazard penyedia layanan \citep{nurlianti2025,muliarta2023,syafrawati2023}. Namun, anomali klaim atau upcoding tidak selalu dapat langsung disamakan dengan fraud aktual, karena penetapan fraud tetap memerlukan proses verifikasi, audit, dan penilaian pihak berwenang.
+
+Dalam praktik pengendalian klaim, proses verifikasi berperan untuk menjaga kesesuaian klaim dengan kaidah koding, aspek klinis, dan administrasi. Panduan Manual Verifikasi Klaim INA-CBG menjelaskan bahwa perbedaan persepsi antara verifikator BPJS Kesehatan dan \textit{coder} fasilitas kesehatan masih menjadi salah satu permasalahan dalam penyelesaian klaim INA-CBG, sehingga verifikasi diperlukan untuk meminimalkan \textit{dispute claim} dari sisi koding, klinis, dan administrasi \citep{bpjs2018}. Karena volume dan kompleksitas data klaim tinggi, proses pemeriksaan manual perlu didukung oleh pendekatan berbasis data yang dapat membantu menyusun prioritas verifikasi.
+
+Machine learning telah digunakan dalam berbagai penelitian untuk mendeteksi potensi fraud pada klaim asuransi kesehatan karena mampu mempelajari pola dari data dan mengidentifikasi indikasi penyimpangan yang tidak selalu mudah ditemukan melalui aturan manual \citep{nabrawi2023,hamid2024,curtis2025}. Meskipun demikian, penerapan machine learning pada data klaim kesehatan menghadapi tantangan utama, yaitu tidak selalu tersedianya label fraud aktual pada level klaim. Dalam kondisi tersebut, anomaly detection, semi-supervised learning, dan pseudo-labeling dapat digunakan untuk membentuk sinyal awal terhadap klaim yang memiliki pola berbeda dari mayoritas klaim lain \citep{shekhar2023,settipalli2023,meulemeester2025,bakker2025,lee2013}.
+
+Selain kemampuan mendeteksi indikasi risiko, model pada domain klaim kesehatan juga perlu dapat dijelaskan. Auditor dan verifikator tidak hanya membutuhkan skor risiko, tetapi juga alasan mengapa suatu klaim diprioritaskan untuk diperiksa. Model prediksi fraud asuransi kesehatan perlu memperhatikan aspek ketahanan dan interpretabilitas agar hasilnya dapat dipahami oleh pengguna \citep{wang2025}. Teknik explainable artificial intelligence seperti SHAP dan LIME dapat digunakan untuk membantu menjelaskan kontribusi fitur terhadap prediksi model \citep{ribeiro2016,lundberg2017,salih2025}.
+
+Berdasarkan uraian tersebut, penelitian ini berfokus pada deteksi potensi fraud atau upcoding pada klaim JKN/BPJS dalam sistem INA-CBG. Penelitian ini tidak diposisikan sebagai sistem penetapan fraud final, melainkan sebagai pendekatan analitis untuk mengidentifikasi indikasi risiko dan membantu prioritisasi verifikasi klaim. Celah yang menjadi perhatian penelitian ini adalah kebutuhan untuk membangun pipeline \textit{claim-centric} yang menempatkan satu klaim sebagai unit analisis utama, membentuk pseudo-label ketika label fraud aktual tidak tersedia, membandingkan beberapa model machine learning, melakukan \textit{threshold tuning}, serta menyediakan interpretabilitas global dan lokal.
+
+\section{PERMASALAHAN}
+
+Permasalahan utama dalam penelitian ini adalah bagaimana membangun pendekatan machine learning yang dapat membantu mengidentifikasi klaim JKN/BPJS dengan indikasi risiko \textit{fraud} atau \textit{upcoding} dalam sistem INA-CBG. Klaim INA-CBG terbentuk dari kombinasi informasi administratif, klinis, biaya, diagnosis, prosedur, \textit{severity level}, dan hasil \textit{grouping}, sehingga indikasi risiko tidak dapat dibaca hanya dari satu atribut klaim \citep{kemenkes2016}. Oleh karena itu, diperlukan representasi data yang mampu menempatkan setiap klaim sebagai unit analisis utama dan menggabungkan konteks yang relevan di sekitar klaim tersebut.
+
+Permasalahan berikutnya adalah tidak tersedianya \textit{ground-truth fraud label} pada level klaim dalam data yang digunakan. Ketiadaan label ini membuat \textit{supervised learning} tidak dapat langsung diterapkan sebagai \textit{fraud classifier} final. Pada kondisi keterbatasan label, pendekatan deteksi anomali, \textit{unsupervised learning}, dan \textit{semi-supervised learning} sering digunakan untuk membentuk sinyal awal terhadap observasi yang berpotensi menyimpang dari pola umum data \citep{shekhar2023,settipalli2023,meulemeester2025,bakker2025}. Dalam penelitian ini, sinyal awal tersebut digunakan sebagai pseudo-label atau label proksi, bukan sebagai bukti \textit{fraud} aktual.
+
+Selain itu, proses verifikasi klaim membutuhkan mekanisme prioritisasi agar pemeriksaan dapat lebih terarah pada klaim yang memiliki indikasi risiko lebih tinggi. Dalam konteks \textit{fraud} dan anomaly detection, hasil model perlu dipahami sebagai alat bantu analitis yang mendukung proses pemeriksaan, bukan sebagai pengganti auditor atau verifikator. Oleh karena itu, penelitian ini perlu menggabungkan pemodelan prediktif, pengaturan ambang keputusan, dan interpretabilitas agar hasil model dapat digunakan untuk mendukung triase klaim secara lebih transparan \citep{wang2025,ribeiro2016,lundberg2017,salih2025}.
+
+Berdasarkan uraian tersebut, rumusan masalah dalam penelitian ini adalah sebagai berikut:
+
+\begin{enumerate}[label=\arabic*., leftmargin=*]
+  \item Bagaimana mengintegrasikan data klaim JKN/BPJS ke dalam representasi \textit{claim-centric} sehingga setiap observasi merepresentasikan satu klaim FKRTL yang memuat konteks administratif, klinis, biaya, dan histori layanan?
+  \item Bagaimana membentuk pseudo-label sebagai sinyal risiko awal ketika label \textit{fraud} aktual pada level klaim tidak tersedia?
+  \item Bagaimana menerapkan dan membandingkan beberapa model machine learning untuk mempelajari pola klaim berisiko berdasarkan pseudo-label, tanpa mengklaim model sebagai penentu \textit{fraud} final?
+  \item Bagaimana menentukan ambang keputusan yang sesuai agar keluaran model dapat digunakan untuk prioritas verifikasi klaim, bukan sekadar klasifikasi biner?
+  \item Bagaimana menjelaskan faktor-faktor yang memengaruhi prediksi model sehingga hasil deteksi indikasi risiko dapat dipahami dan ditelusuri oleh pengguna?
+\end{enumerate}
+
+\section{BATASAN MASALAH}
+
+Batasan masalah dalam penelitian ini adalah sebagai berikut:
+
+\begin{enumerate}[label=\arabic*., leftmargin=*]
+  \item Penelitian berfokus pada deteksi indikasi risiko \textit{fraud} atau \textit{upcoding} pada klaim JKN/BPJS dalam sistem INA-CBG, khususnya pada konteks klaim FKRTL.
+  \item Unit analisis utama dalam penelitian ini adalah klaim. Setiap baris data diperlakukan sebagai satu klaim yang memuat informasi administratif, klinis, biaya, diagnosis, prosedur, serta histori layanan yang relevan.
+  \item Penelitian tidak menggunakan label \textit{fraud} resmi hasil audit sebagai \textit{ground-truth}. Karena label \textit{fraud} aktual pada level klaim tidak tersedia, penelitian menggunakan pseudo-label berbasis anomaly detection sebagai target awal pemodelan. Pendekatan seperti ini relevan pada kondisi keterbatasan label, terutama ketika model perlu mengenali pola anomali atau risiko awal dari data klaim \citep{shekhar2023,meulemeester2025,bakker2025}.
+  \item Pseudo-label yang dibentuk dalam penelitian ini tidak diartikan sebagai bukti \textit{fraud}, melainkan sebagai label proksi yang menunjukkan indikasi anomali atau risiko awal yang perlu ditinjau lebih lanjut.
+  \item Model machine learning dalam penelitian ini diposisikan sebagai alat bantu analitis untuk prioritas verifikasi klaim, bukan sebagai sistem adjudikasi atau penetapan \textit{fraud} final.
+  \item Evaluasi performa model dilakukan terhadap pseudo-label atau target indikatif yang dibentuk dalam eksperimen. Oleh karena itu, metrik evaluasi tidak ditafsirkan sebagai kemampuan model membuktikan \textit{fraud} aktual, melainkan sebagai kemampuan model mempelajari dan memprioritaskan pola klaim berisiko berdasarkan label proksi.
+  \item Penelitian mencakup integrasi data berbasis \textit{claim-centric}, pembentukan pseudo-label, benchmarking beberapa model \textit{supervised learning}, \textit{threshold tuning}, serta interpretabilitas model.
+  \item Interpretabilitas model digunakan untuk membantu memahami faktor yang berkaitan dengan prioritas risiko, baik secara global maupun lokal. Interpretasi tersebut tidak dimaksudkan sebagai bukti kausal, penilaian klinis final, atau keputusan audit resmi. Penggunaan interpretabilitas pada model \textit{fraud} dan anomaly detection penting untuk membantu pengguna memahami dasar prediksi yang dihasilkan model \citep{wang2025,ribeiro2016,lundberg2017,salih2025}.
+  \item Keputusan akhir mengenai kebenaran \textit{fraud} tetap berada pada proses verifikasi, audit, dan penilaian pihak yang berwenang.
+\end{enumerate}
+
+\section{TUJUAN}
+
+Penelitian ini bertujuan mengembangkan pendekatan machine learning berbasis \textit{claim-centric} untuk mendeteksi indikasi risiko \textit{fraud} atau \textit{upcoding} pada klaim JKN/BPJS dalam sistem INA-CBG. Pendekatan ini diarahkan sebagai alat bantu prioritisasi verifikasi klaim, bukan sebagai sistem penentu \textit{fraud} final. Secara khusus, tujuan penelitian ini adalah sebagai berikut:
+
+\begin{enumerate}[label=\arabic*., leftmargin=*]
+  \item Mengintegrasikan data klaim dan data pendukung ke dalam representasi \textit{claim-centric} sehingga setiap observasi merepresentasikan satu klaim FKRTL yang siap digunakan untuk analisis risiko.
+  \item Membentuk fitur yang merepresentasikan konteks klaim, meliputi informasi administratif, klinis, biaya, diagnosis, prosedur, \textit{severity level}, serta histori layanan.
+  \item Membentuk pseudo-label berbasis anomaly detection sebagai sinyal risiko awal ketika label \textit{fraud} aktual pada level klaim tidak tersedia.
+  \item Menerapkan dan membandingkan beberapa model machine learning untuk mempelajari pola klaim berisiko berdasarkan pseudo-label yang telah dibentuk.
+  \item Menentukan konfigurasi model dan ambang keputusan yang dapat digunakan untuk memprioritaskan klaim dengan indikasi risiko lebih tinggi.
+  \item Mengevaluasi performa model secara proporsional terhadap pseudo-label, dengan memperhatikan bahwa metrik evaluasi tidak merepresentasikan pembuktian \textit{fraud} aktual.
+  \item Menyediakan interpretabilitas model melalui analisis fitur penting serta penjelasan global dan lokal agar faktor yang memengaruhi prediksi klaim berisiko dapat dipahami.
+\end{enumerate}
+
+\section{MANFAAT}
+
+\subsection{Bagi BPJS Kesehatan dan Regulator}
+
+Penelitian ini dapat memberikan gambaran pendekatan analitik untuk membantu memprioritaskan klaim yang memiliki indikasi risiko \textit{fraud} atau \textit{upcoding}. Hasil penelitian dapat digunakan sebagai referensi awal dalam pengembangan mekanisme screening klaim berbasis data, terutama ketika pemeriksaan manual perlu diarahkan pada klaim yang paling layak ditinjau lebih lanjut. Namun, keluaran model tetap perlu diposisikan sebagai dukungan analitis, bukan sebagai keputusan \textit{fraud} final.
+
+\subsection{Bagi Auditor dan Verifikator Klaim}
+
+Penelitian ini dapat membantu auditor dan verifikator dalam menyusun prioritas pemeriksaan klaim. Skor risiko, ambang keputusan, dan penjelasan faktor pendorong prediksi dapat menjadi bahan awal untuk menelaah klaim yang menunjukkan pola tidak wajar. Dengan demikian, model dapat berfungsi sebagai alat bantu triase audit yang mendukung efisiensi pemeriksaan tanpa menggantikan penilaian profesional.
+
+\subsection{Bagi Fasilitas Kesehatan}
+
+Penelitian ini dapat memberikan masukan bagi fasilitas kesehatan mengenai pentingnya kualitas dokumentasi medis, ketepatan pengkodean diagnosis dan prosedur, serta konsistensi data klaim. Analisis terhadap faktor risiko dapat membantu fasilitas kesehatan memahami pola klaim yang berpotensi menimbulkan perhatian dalam proses verifikasi.
+
+\subsection{Bagi Pengembangan Ilmu Pengetahuan}
+
+Penelitian ini memberikan kontribusi pada penerapan machine learning untuk analitik klaim kesehatan, khususnya dalam kondisi tidak tersedianya label \textit{fraud} aktual pada level klaim. Kontribusi ilmiah penelitian terletak pada penggunaan pendekatan \textit{claim-centric}, pseudo-labeling berbasis anomaly detection, benchmarking model \textit{supervised learning}, \textit{threshold tuning}, serta interpretabilitas untuk mendukung prioritisasi klaim berisiko.
+
+\subsection{Bagi Penelitian Selanjutnya}
+
+Penelitian ini dapat menjadi dasar bagi pengembangan studi lanjutan yang menggunakan label audit resmi, validasi pakar, data klinis yang lebih lengkap, atau integrasi langsung dengan sistem verifikasi klaim. Penelitian selanjutnya juga dapat mengembangkan pendekatan yang lebih adaptif terhadap perubahan pola klaim dan memperkuat validasi terhadap hasil prioritisasi risiko.
+
+\section{SISTEMATIKA PENULISAN}
+
+Laporan Proyek Akhir ini disusun ke dalam lima bab utama agar pembahasan dapat disajikan secara runtut dan terarah. Sistematika penulisan laporan ini adalah sebagai berikut.
+
+\begin{description}[leftmargin=2.2cm, labelsep=0cm, itemsep=0.1cm]
+  \item[{\makebox[2.2cm][l]{\textbf{Bab 1}}}] \textbf{Pendahuluan}\\
+  Bab ini menjelaskan latar belakang, permasalahan, batasan masalah, tujuan, manfaat, dan sistematika penulisan. Pembahasan diarahkan untuk menjelaskan urgensi deteksi indikasi risiko fraud/upcoding pada klaim JKN/BPJS dalam sistem INA-CBG serta posisi penelitian sebagai alat bantu prioritisasi verifikasi klaim.
+
+  \item[{\makebox[2.2cm][l]{\textbf{Bab 2}}}] \textbf{Kajian Pustaka}\\
+  Bab ini membahas konsep dan penelitian terkait yang menjadi dasar penelitian, meliputi sistem klaim INA-CBG, fraud dan upcoding pada klaim kesehatan, machine learning untuk analitik klaim, anomaly detection, pseudo-labeling, evaluasi model, serta interpretabilitas.
+
+  \item[{\makebox[2.2cm][l]{\textbf{Bab 3}}}] \textbf{Deskripsi Sistem}\\
+  Bab ini menjelaskan rancangan solusi yang digunakan dalam penelitian, mulai dari integrasi data berbasis claim-centric, pembentukan fitur, pseudo-labeling, pemodelan supervised, pembandingan model, threshold tuning, hingga interpretabilitas hasil.
+
+  \item[{\makebox[2.2cm][l]{\textbf{Bab 4}}}] \textbf{Eksperimen dan Analisis}\\
+  Bab ini menyajikan pelaksanaan eksperimen, karakteristik data, hasil pembentukan pseudo-label, hasil benchmarking model, evaluasi model final, serta analisis interpretabilitas. Pembahasan hasil dilakukan secara proporsional dengan menempatkan metrik evaluasi sebagai ukuran performa terhadap pseudo-label, bukan sebagai pembuktian fraud aktual.
+
+  \item[{\makebox[2.2cm][l]{\textbf{Bab 5}}}] \textbf{Penutup}\\
+  Bab ini berisi kesimpulan dan saran. Kesimpulan menjawab tujuan penelitian berdasarkan hasil eksperimen, sedangkan saran berisi arahan pengembangan penelitian, terutama terkait validasi lanjutan, penggunaan label audit resmi, dan penguatan integrasi dengan proses verifikasi klaim.
+\end{description}
