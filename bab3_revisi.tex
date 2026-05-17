@@ -1,0 +1,227 @@
+%============================================================
+% BAB 3 — revisi metodologi berbasis claim-centric dan pseudo-label
+%============================================================
+\chapter{DESKRIPSI SISTEM}
+
+Bab ini menjelaskan metodologi dan rancangan sistem yang digunakan untuk mendeteksi indikasi risiko \emph{fraud} atau \emph{upcoding} pada klaim JKN/BPJS berbasis INA-CBG. Sistem yang dikembangkan tidak ditujukan untuk menetapkan status \emph{fraud} final, melainkan sebagai alat bantu analitis untuk memprioritaskan klaim yang memiliki indikasi risiko lebih tinggi agar dapat diverifikasi lebih lanjut. Oleh karena itu, seluruh tahapan dalam bab ini dijelaskan dengan membedakan secara jelas antara pembentukan pseudo-label, pemodelan supervised, evaluasi terhadap label proksi, dan interpretabilitas hasil.
+
+Secara umum, metodologi penelitian terdiri atas tiga lapisan utama. Lapisan pertama adalah \emph{claim-centric data preparation}, yaitu proses menempatkan satu klaim FKRTL sebagai unit analisis utama dan memperkayanya dengan data pendukung. Lapisan kedua adalah \emph{weak-label} atau \emph{pseudo-label generation}, yaitu pembentukan target awal berbasis deteksi anomali karena tidak tersedia \emph{ground-truth fraud label} pada level klaim. Lapisan ketiga adalah \emph{supervised benchmarking}, \emph{threshold tuning}, evaluasi, dan interpretabilitas, yaitu proses membandingkan beberapa model, menentukan ambang prioritas, dan menjelaskan faktor yang memengaruhi skor risiko.
+
+\section{Deskripsi Solusi}\label{deskripsi-solusi}
+
+Solusi yang diajukan pada penelitian ini adalah workflow analitis berbasis \emph{machine learning} untuk membantu mengidentifikasi klaim dengan indikasi risiko \emph{fraud} atau \emph{upcoding}. Fokus sistem bukan pada adjudikasi atau pembuktian \emph{fraud} aktual, melainkan pada penyusunan prioritas verifikasi klaim. Dengan demikian, keluaran sistem berupa skor risiko, prediksi indikatif, dan daftar klaim prioritas harus dipahami sebagai dukungan analitis bagi verifikator atau auditor, bukan sebagai keputusan akhir.
+
+Workflow sistem dibangun dengan menjadikan klaim FKRTL sebagai pusat analisis. Setiap klaim diperkaya dengan informasi kepesertaan, diagnosis sekunder, histori layanan FKTP kapitasi, histori layanan nonkapitasi, fitur biaya, fitur klinis, dan fitur turunan yang relevan. Setelah dataset berbasis klaim terbentuk, sistem membangun pseudo-label melalui deteksi anomali. Pseudo-label tersebut kemudian digunakan sebagai target proksi untuk membandingkan beberapa model supervised dan memilih konfigurasi yang paling sesuai.
+
+Interpretabilitas ditempatkan sebagai komponen penting karena hasil model pada domain klaim kesehatan tidak cukup hanya berupa prediksi biner atau skor risiko. Sistem perlu menjelaskan faktor yang membuat suatu klaim diprioritaskan, baik pada tingkat global maupun lokal. Oleh karena itu, penelitian ini menggunakan interpretasi berbasis \emph{feature importance}, SHAP, PDP, dan LIME untuk membantu menjelaskan pola yang dipelajari model.
+
+\begin{longtable}[]{@{}p{0.25\columnwidth}p{0.35\columnwidth}p{0.35\columnwidth}@{}}
+\caption{Komponen Utama Solusi yang Diusulkan}\label{tab:komponen-solusi}\\
+\toprule
+\textbf{Komponen} & \textbf{Fungsi} & \textbf{Keluaran} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Komponen} & \textbf{Fungsi} & \textbf{Keluaran} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\emph{Claim-centric data preparation} & Menyusun dataset dengan satu klaim sebagai unit analisis & Dataset klaim terintegrasi \\
+\emph{Pseudo-label generation} & Membentuk target proksi berbasis anomali & Anomaly score dan pseudo-label \\
+\emph{Supervised benchmarking} & Membandingkan model prediktif terhadap pseudo-label & Model dan branch fitur terbaik \\
+\emph{Threshold tuning} & Menentukan ambang prioritas verifikasi & Threshold operasional \\
+\emph{Interpretability} & Menjelaskan faktor yang memengaruhi skor risiko & Feature importance, SHAP, PDP, dan LIME \\
+\end{longtable}
+
+\section{Alur Umum Sistem}\label{alur-umum-sistem}
+
+Alur sistem dimulai dari pemuatan data mentah, pemetaan kolom berdasarkan \emph{data dictionary}, integrasi data berbasis klaim, pembersihan data, rekayasa fitur, pembentukan pseudo-label, pembagian data, preprocessing, seleksi fitur, benchmarking model supervised, pemilihan model terbaik, threshold tuning, evaluasi akhir, dan interpretabilitas model. Urutan ini dirancang agar setiap tahap memiliki fungsi yang jelas dan tidak mencampur peran antara pembentukan label proksi dan prediksi supervised.
+
+Tahap \emph{claim-centric data preparation} memastikan bahwa data klaim tersusun pada level observasi yang tepat. Tahap pseudo-labeling menyediakan target awal karena label \emph{fraud} aktual tidak tersedia. Tahap supervised benchmarking menguji kemampuan model dalam mempelajari pola yang terkandung dalam pseudo-label. Tahap threshold tuning mengubah skor risiko menjadi mekanisme prioritas verifikasi. Tahap interpretabilitas menjelaskan faktor yang mendorong klaim diprioritaskan.
+
+Dengan demikian, metodologi penelitian ini tidak hanya berupa penerapan algoritma, tetapi berupa workflow analitis yang menghubungkan integrasi data klaim, pembentukan target indikatif, evaluasi model, dan dukungan interpretasi untuk kebutuhan verifikasi klaim.
+
+\section{Claim-Centric Data Preparation}\label{claim-centric-data-preparation}
+
+\subsection{Sumber Data dan Unit Analisis}\label{sumber-data-dan-unit-analisis}
+
+Tahap awal penelitian adalah menyusun dataset berbasis klaim dengan menjadikan tabel FKRTL sebagai pusat analisis. Pemilihan FKRTL sebagai \emph{fact table} didasarkan pada tujuan penelitian, yaitu mengidentifikasi indikasi risiko \emph{fraud} atau \emph{upcoding} pada level klaim layanan rujukan. Dengan demikian, setiap baris pada dataset akhir merepresentasikan satu klaim FKRTL.
+
+Data FKRTL diperkaya dengan beberapa sumber pendukung, yaitu data kepesertaan, diagnosis sekunder, histori layanan FKTP kapitasi, dan histori layanan nonkapitasi. Data kepesertaan digunakan untuk menambahkan atribut peserta, seperti usia, jenis kelamin, status kepesertaan, segmen peserta, dan hak kelas rawat. Data diagnosis sekunder digunakan untuk menangkap kompleksitas klinis tambahan pada klaim. Data FKTP kapitasi dan nonkapitasi digunakan untuk membentuk fitur histori layanan sebelum klaim FKRTL terjadi.
+
+Pendekatan ini disebut \emph{claim-centric} karena seluruh informasi diarahkan untuk memperkaya satu unit klaim sebagai pusat analisis. Dengan cara ini, klaim tidak hanya dilihat sebagai nilai biaya, tetapi sebagai entitas yang memuat konteks administratif, klinis, biaya, diagnosis, prosedur, dan histori layanan.
+
+\begin{longtable}[]{@{}p{0.25\columnwidth}p{0.35\columnwidth}p{0.35\columnwidth}@{}}
+\caption{Sumber Data dan Perannya dalam Pipeline}\label{tab:sumber-data}\\
+\toprule
+\textbf{Tabel} & \textbf{Fungsi} & \textbf{Peran dalam Pipeline} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Tabel} & \textbf{Fungsi} & \textbf{Peran dalam Pipeline} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+FKRTL & Data klaim layanan rujukan & \emph{Fact table} dan unit analisis utama \\
+Kepesertaan & Profil peserta & Pengayaan atribut peserta \\
+Diagnosis sekunder & Diagnosis tambahan per klaim & Agregasi kompleksitas diagnosis \\
+FKTP kapitasi & Riwayat layanan tingkat pertama & Fitur histori layanan sebelum klaim \\
+Nonkapitasi & Riwayat layanan nonkapitasi & Fitur histori utilisasi dan biaya sebelum klaim \\
+\end{longtable}
+
+\subsection{Knowledge-Driven Column Mapping}\label{knowledge-driven-column-mapping}
+
+Sebelum integrasi dilakukan, penelitian menerapkan \emph{knowledge-driven column mapping} berdasarkan \emph{data dictionary} BPJS. Tahap ini digunakan untuk menerjemahkan kode kolom mentah menjadi nama variabel yang lebih eksplisit dan dapat dipahami secara analitis. Variabel seperti identitas peserta, identitas klaim, tanggal pelayanan, kode diagnosis, kode prosedur, \emph{severity level}, tarif INA-CBG, tarif grouping, tarif disetujui, dan atribut fasilitas kesehatan dipetakan ke nama variabel yang konsisten.
+
+Pemetaan ini penting karena data mentah BPJS menggunakan kode variabel yang tidak selalu langsung menjelaskan makna domainnya. Dengan pemetaan berbasis \emph{data dictionary}, proses integrasi dan \emph{feature engineering} tidak hanya bersifat teknis, tetapi juga mengikuti pemahaman domain klaim kesehatan. Detail pemetaan variabel yang terlalu panjang dapat ditempatkan pada lampiran agar Bab 3 tetap fokus pada alur metodologi.
+
+\subsection{Integrasi Data Berbasis Klaim}\label{integrasi-data-berbasis-klaim}
+
+Integrasi data dilakukan dengan menjadikan FKRTL sebagai tabel utama. Data kepesertaan digabungkan berdasarkan identitas peserta. Data diagnosis sekunder diagregasi pada level klaim untuk menghasilkan fitur seperti jumlah diagnosis sekunder dan jumlah grup diagnosis sekunder. Data FKTP kapitasi dan nonkapitasi digunakan untuk membentuk fitur histori layanan sebelum tanggal masuk klaim FKRTL.
+
+Pembentukan histori layanan dilakukan dengan memperhatikan urutan waktu, yaitu hanya menggunakan kejadian layanan yang terjadi sebelum klaim FKRTL. Hal ini penting agar fitur histori tidak memasukkan informasi masa depan yang tidak seharusnya tersedia pada saat klaim dinilai. Dengan demikian, fitur histori lebih tepat menggambarkan konteks yang mendahului klaim, bukan informasi setelah klaim terjadi.
+
+\subsection{Cleaning dan Standardization}\label{cleaning-dan-standardization}
+
+Setelah data terintegrasi, dilakukan pembersihan dan standardisasi data. Tahap ini mencakup standardisasi identifier, konversi variabel tanggal, konversi variabel numerik, normalisasi teks kategorikal, serta penanganan nilai kosong dan nilai tidak valid. Variabel biaya dan \emph{severity level} dikonversi ke format numerik, sedangkan variabel kategorikal dinormalisasi agar konsisten.
+
+Tahap ini diperlukan karena data berasal dari beberapa tabel dengan struktur dan kualitas yang berbeda. Tanpa standardisasi, proses pemodelan dapat terganggu oleh format data yang tidak seragam, nilai kosong yang tidak tertangani, atau perbedaan penulisan kategori.
+
+\section{Feature Engineering}\label{feature-engineering}
+
+\emph{Feature engineering} dilakukan untuk membentuk variabel yang lebih informatif dari data mentah dan data hasil integrasi. Fitur yang digunakan dalam penelitian dikelompokkan menjadi fitur demografis, administratif, klinis, biaya, diagnosis, histori layanan, dan rasio turunan.
+
+Fitur demografis mencakup usia dan jenis kelamin. Fitur administratif mencakup status kepesertaan, segmen peserta, kelas rawat hak, kelas rawat klaim, jenis layanan, status pulang, jenis fasilitas kesehatan, dan atribut fasilitas lainnya. Fitur klinis mencakup \emph{severity level}, lama rawat, jenis INA-CBG, kategori tindakan, diagnosis utama, tindakan utama, serta indikator \emph{special CMG}. Fitur biaya mencakup tarif INA-CBG dasar, tarif grouping, tarif disetujui, total \emph{special CMG}, dan biaya per hari. Fitur diagnosis mencakup jumlah diagnosis sekunder dan jumlah grup diagnosis sekunder. Fitur histori layanan mencakup jumlah layanan FKTP sebelumnya, jumlah layanan nonkapitasi sebelumnya, dan total biaya nonkapitasi sebelum klaim. Fitur rasio turunan mencakup rasio tarif disetujui terhadap tarif dasar, rasio tarif grouping terhadap tarif disetujui, dan rasio biaya klaim terhadap histori biaya nonkapitasi.
+
+\begin{longtable}[]{@{}p{0.22\columnwidth}p{0.43\columnwidth}p{0.30\columnwidth}@{}}
+\caption{Kelompok Fitur dalam Penelitian}\label{tab:kelompok-fitur}\\
+\toprule
+\textbf{Kelompok Fitur} & \textbf{Contoh Variabel} & \textbf{Tujuan Analitis} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Kelompok Fitur} & \textbf{Contoh Variabel} & \textbf{Tujuan Analitis} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Demografis & usia, jenis kelamin & Menggambarkan profil peserta \\
+Administratif & segmen peserta, kelas rawat, jenis layanan, status pulang & Menangkap konteks administratif klaim \\
+Klinis & \emph{severity level}, lama rawat, jenis INA-CBG, tindakan utama & Menggambarkan kompleksitas klinis \\
+Biaya & tarif INA-CBG dasar, tarif grouping, tarif disetujui, biaya per hari & Menangkap pola beban biaya klaim \\
+Diagnosis & jumlah diagnosis sekunder, jumlah grup diagnosis sekunder & Mengukur kompleksitas diagnosis tambahan \\
+Histori layanan & jumlah layanan FKTP, jumlah layanan nonkapitasi, total biaya histori & Menangkap utilisasi sebelum klaim \\
+Rasio turunan & rasio tarif disetujui terhadap tarif dasar, rasio biaya klaim terhadap histori & Menyoroti ketidakwajaran relatif antar komponen biaya \\
+\end{longtable}
+
+Perlu ditekankan bahwa fitur pada penelitian ini memiliki fungsi yang berbeda pada setiap tahap. Fitur yang digunakan untuk membentuk pseudo-label berperan sebagai dasar identifikasi anomali awal, sedangkan fitur yang digunakan pada supervised prediction berperan untuk mempelajari pola prioritas risiko berdasarkan target proksi tersebut. Pembedaan fungsi ini penting agar model supervised tidak sekadar dipahami sebagai proses merekonstruksi ulang aturan pembentukan pseudo-label.
+
+\section{Pseudo-Label Generation}\label{pseudo-label-generation}
+
+\subsection{Kebutuhan Pseudo-Label}\label{kebutuhan-pseudo-label}
+
+Tantangan utama penelitian ini adalah tidak tersedianya \emph{ground-truth fraud label} pada level klaim. Data klaim tidak menyediakan informasi final mengenai apakah suatu klaim telah terbukti \emph{fraud} melalui audit resmi. Oleh karena itu, supervised learning tidak dapat langsung diterapkan sebagai \emph{fraud classifier} final.
+
+Untuk mengatasi kondisi tersebut, penelitian ini menggunakan pseudo-label sebagai target awal pemodelan. Pseudo-label dibentuk untuk merepresentasikan indikasi anomali atau risiko awal pada klaim. Dengan demikian, pseudo-label berfungsi sebagai label proksi yang memungkinkan proses benchmarking model supervised dilakukan, tetapi tidak boleh disamakan dengan label \emph{fraud} aktual.
+
+\subsection{Pembentukan Pseudo-Label dengan Isolation Forest}\label{pembentukan-pseudo-label-dengan-isolation-forest}
+
+Pseudo-label dibentuk menggunakan algoritma \emph{Isolation Forest}. Algoritma ini digunakan untuk mengidentifikasi observasi yang memiliki pola berbeda dari mayoritas data berdasarkan fitur numerik terpilih. Fitur yang digunakan pada tahap ini mencerminkan karakteristik biaya, klinis, diagnosis, dan histori layanan, seperti usia, lama rawat, \emph{severity level}, tarif disetujui, tarif INA-CBG dasar, total \emph{special CMG}, biaya per hari, rasio tarif, jumlah diagnosis sekunder, serta histori layanan sebelum klaim.
+
+Sebelum pemodelan, fitur numerik pada tahap pseudo-labeling dibersihkan dari nilai tidak valid, nilai kosong diisi menggunakan median, dan skala fitur disesuaikan menggunakan \emph{RobustScaler}. Penelitian juga melakukan \emph{sensitivity analysis} terhadap beberapa nilai \emph{contamination rate} untuk melihat proporsi klaim yang ditandai sebagai anomali. Setelah parameter dipilih, \emph{Isolation Forest} menghasilkan \emph{anomaly score} dan pseudo-label. Klaim yang diprediksi sebagai anomali diberi label proksi sebagai klaim dengan indikasi risiko, sedangkan klaim lainnya diberi label sebagai klaim non-anomali.
+
+\subsection{Batas Interpretasi Pseudo-Label}\label{batas-interpretasi-pseudo-label}
+
+Pseudo-label yang dihasilkan oleh \emph{Isolation Forest} tidak merepresentasikan \emph{fraud} aktual. Label tersebut hanya menunjukkan bahwa suatu klaim memiliki pola yang berbeda dari mayoritas klaim lain berdasarkan fitur yang digunakan pada tahap deteksi anomali. Klaim yang anomali dapat menunjukkan indikasi risiko, tetapi juga dapat terjadi karena variasi klinis yang sah, kompleksitas kasus, atau kondisi administratif tertentu.
+
+Perlu ditekankan bahwa pseudo-label pada penelitian ini berfungsi sebagai target proksi untuk mengevaluasi konsistensi model terhadap pola indikasi risiko, bukan sebagai \emph{ground-truth fraud} yang telah diverifikasi secara final. Oleh karena itu, hasil evaluasi model terhadap pseudo-label tidak boleh ditafsirkan sebagai bukti bahwa model mampu membuktikan \emph{fraud} nyata secara final.
+
+\section{Supervised Benchmarking}\label{supervised-benchmarking}
+
+\subsection{Data Split dan Preprocessing}\label{data-split-dan-preprocessing}
+
+Setelah pseudo-label terbentuk, dataset dibagi menjadi tiga subset, yaitu \emph{train}, \emph{validation}, dan \emph{test}. Pembagian dilakukan secara stratified berdasarkan pseudo-label agar proporsi kelas pada setiap subset tetap terjaga. Data \emph{train} digunakan untuk melatih model, data \emph{validation} digunakan untuk memilih konfigurasi terbaik dan threshold, sedangkan data \emph{test} digunakan untuk evaluasi akhir model final.
+
+Tahap preprocessing diterapkan setelah pembagian data untuk mengurangi risiko kebocoran informasi. Fitur numerik diproses menggunakan imputasi median dan \emph{RobustScaler}, sedangkan fitur kategorikal diproses menggunakan imputasi kategori paling sering dan \emph{OrdinalEncoder}. Parameter preprocessing dipelajari pada data \emph{train}, kemudian diterapkan pada \emph{validation} dan \emph{test}. Dengan demikian, informasi dari data \emph{validation} dan \emph{test} tidak digunakan untuk membentuk parameter preprocessing pada data \emph{train}.
+
+\subsection{Branch-Based Feature Selection}\label{branch-based-feature-selection}
+
+Penelitian ini menggunakan \emph{branch-based feature selection} untuk membandingkan beberapa strategi pemilihan fitur. Strategi ini dilakukan agar model tidak bergantung pada satu set fitur tunggal. Cabang fitur yang digunakan mencakup \emph{domain expert}, \emph{correlation filter}, VIF filter, \emph{permutation importance}, dan \emph{combined branch}.
+
+\emph{Branch domain expert} mempertahankan fitur yang dianggap relevan berdasarkan pemahaman domain klaim kesehatan. \emph{Branch correlation filter} mengurangi fitur yang memiliki korelasi tinggi. Branch VIF mengurangi multikolinearitas antar fitur numerik. \emph{Branch permutation importance} memilih fitur berdasarkan kontribusi prediktif terhadap model. \emph{Branch combined} menggabungkan beberapa prinsip seleksi untuk memperoleh set fitur yang lebih seimbang.
+
+Dalam konteks \emph{leakage-aware evaluation}, branch fitur juga perlu dibaca sebagai bagian dari pengendalian risiko evaluasi. Jika suatu branch masih menggunakan fitur yang overlap dengan fitur pembentuk pseudo-label, maka hasilnya perlu ditafsirkan sebagai kemampuan model mereplikasi pola pseudo-label. Sebaliknya, branch yang lebih membatasi overlap dapat memberikan estimasi yang lebih konservatif mengenai kemampuan model menangkap sinyal risiko dari fitur prediksi.
+
+\subsection{Pembandingan Model Supervised}\label{pembandingan-model-supervised}
+
+Model supervised digunakan untuk mempelajari pola klaim berisiko berdasarkan pseudo-label. Model yang dibandingkan mencakup Logistic Regression, Random Forest, Linear SVM berbasis SGD, XGBoost, LightGBM, dan CatBoost. Pembandingan beberapa model dilakukan agar pemilihan model final bersifat empiris, bukan berdasarkan asumsi terhadap satu algoritma tertentu.
+
+Evaluasi awal dilakukan pada data \emph{validation} menggunakan beberapa metrik, seperti ROC-AUC, PR-AUC, F1-score, precision, recall, dan MCC. Pemilihan model pemenang dilakukan berdasarkan \emph{composite score} yang menggabungkan beberapa metrik, dengan penekanan pada F1-score, PR-AUC, ROC-AUC, dan MCC. Pendekatan ini digunakan karena data berisiko cenderung tidak seimbang dan evaluasi tidak cukup hanya mengandalkan akurasi.
+
+\subsection{Leakage-Aware Interpretation}\label{leakage-aware-interpretation}
+
+Karena target supervised berasal dari pseudo-label, hasil benchmarking perlu ditafsirkan secara hati-hati. Jika fitur yang digunakan pada tahap supervised terlalu banyak tumpang tindih dengan fitur pembentuk pseudo-label, model dapat terlihat memiliki performa tinggi karena mempelajari kembali pola yang digunakan dalam pembentukan label. Kondisi ini dapat menghasilkan \emph{performance inflation} dan membuat evaluasi terlihat lebih kuat daripada kemampuan generalisasi sebenarnya.
+
+Oleh karena itu, penelitian ini membedakan fungsi \emph{feature space} antara tahap pseudo-label generation dan supervised prediction. Tahap pseudo-labeling digunakan untuk membentuk target proksi berbasis anomali, sedangkan tahap supervised digunakan untuk mempelajari pola prioritas risiko berdasarkan fitur prediksi. Jika terdapat overlap fitur, hasil model tidak boleh diklaim sebagai bukti deteksi \emph{fraud} aktual, melainkan sebagai kemampuan model dalam mempelajari pola pseudo-label.
+
+\section{Threshold dan Decision Logic}\label{threshold-dan-decision-logic}
+
+Setelah model pemenang diperoleh, penelitian melakukan \emph{threshold tuning} untuk menentukan ambang skor yang paling sesuai dengan tujuan prioritisasi verifikasi. Model menghasilkan skor probabilitas atau skor risiko, sedangkan threshold digunakan untuk mengubah skor tersebut menjadi keputusan operasional berupa klaim yang diprioritaskan atau tidak diprioritaskan.
+
+Threshold dipilih menggunakan data \emph{validation} dengan mempertimbangkan metrik seperti F1-score, precision, recall, dan MCC. Dalam implementasi penelitian, threshold diuji pada beberapa nilai kandidat untuk melihat pengaruhnya terhadap keseimbangan antara kemampuan menangkap klaim berisiko dan ketepatan prioritas. Threshold terbaik kemudian digunakan pada model final untuk menghasilkan prediksi pada data \emph{test}.
+
+Threshold yang digunakan dalam penelitian ini bukan batas absolut untuk menetapkan \emph{fraud}, melainkan ambang operasional untuk membantu menentukan prioritas verifikasi klaim berdasarkan skor risiko model. Ambang yang lebih rendah dapat menangkap lebih banyak klaim berisiko, tetapi meningkatkan jumlah klaim yang perlu diperiksa. Sebaliknya, ambang yang lebih tinggi dapat memperketat prioritas, tetapi berpotensi melewatkan sebagian klaim yang layak ditinjau.
+
+\section{Evaluation and Interpretability}\label{evaluation-and-interpretability}
+
+\subsection{Metrik Evaluasi}\label{metrik-evaluasi}
+
+Evaluasi model dilakukan terhadap pseudo-label sebagai target proksi. Metrik yang digunakan meliputi ROC-AUC, PR-AUC, F1-score, precision, recall, dan MCC. ROC-AUC digunakan untuk melihat kemampuan model memisahkan dua kelas secara umum. PR-AUC digunakan karena lebih informatif pada kondisi kelas tidak seimbang. Precision menunjukkan proporsi klaim yang diprediksi berisiko dan sesuai dengan pseudo-label. Recall menunjukkan proporsi klaim berisiko berdasarkan pseudo-label yang berhasil ditangkap model. F1-score menyeimbangkan precision dan recall. MCC digunakan karena mempertimbangkan seluruh komponen \emph{confusion matrix} dan lebih stabil pada data tidak seimbang.
+
+Interpretasi metrik harus dibatasi pada target evaluasi yang digunakan. Karena target evaluasi adalah pseudo-label, maka metrik tidak menunjukkan akurasi model dalam membuktikan \emph{fraud} aktual. Metrik hanya menunjukkan kemampuan model dalam mempelajari dan mereplikasi pola indikasi risiko yang terkandung dalam pseudo-label.
+
+\begin{longtable}[]{@{}p{0.18\columnwidth}p{0.34\columnwidth}p{0.42\columnwidth}@{}}
+\caption{Metrik Evaluasi Model}\label{tab:metrik-evaluasi-bab3}\\
+\toprule
+\textbf{Metrik} & \textbf{Fungsi} & \textbf{Interpretasi dalam Penelitian} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Metrik} & \textbf{Fungsi} & \textbf{Interpretasi dalam Penelitian} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+ROC-AUC & Mengukur separabilitas dua kelas & Kemampuan membedakan klaim anomali dan non-anomali berdasarkan pseudo-label \\
+PR-AUC & Mengukur kualitas ranking pada kelas positif & Relevan untuk data tidak seimbang dan fokus pada klaim berisiko \\
+F1-score & Menyeimbangkan precision dan recall & Ukuran keseimbangan antara ketepatan dan cakupan prioritas \\
+Precision & Mengukur ketepatan prediksi positif & Mengurangi klaim non-prioritas yang ikut ditandai \\
+Recall & Mengukur cakupan kelas positif & Menangkap sebanyak mungkin klaim berisiko berdasarkan pseudo-label \\
+MCC & Mengukur kualitas klasifikasi secara seimbang & Memberikan ukuran stabil pada distribusi kelas tidak seimbang \\
+\end{longtable}
+
+\subsection{Global Explanation}\label{global-explanation}
+
+Interpretabilitas global digunakan untuk memahami fitur yang paling berpengaruh terhadap prediksi model secara umum. Penelitian menggunakan \emph{feature importance} dan SHAP untuk menjelaskan kontribusi fitur terhadap prediksi. \emph{Feature importance} memberikan gambaran fitur yang dominan dalam model, sedangkan SHAP menjelaskan arah dan besar kontribusi fitur terhadap skor risiko.
+
+Interpretasi global berguna untuk melihat pola umum yang dipelajari model, misalnya apakah prediksi dipengaruhi oleh fitur biaya, \emph{severity level}, diagnosis sekunder, histori layanan, atau rasio turunan tertentu. Namun, interpretasi ini tidak boleh dipahami sebagai bukti kausal bahwa fitur tersebut menyebabkan \emph{fraud}. Interpretasi global hanya menunjukkan kontribusi fitur dalam model prediktif.
+
+\subsection{Local Explanation}\label{local-explanation}
+
+Interpretabilitas lokal digunakan untuk menjelaskan prediksi pada klaim tertentu. Dalam penelitian ini, LIME digunakan untuk menjelaskan faktor yang mendorong model memberi skor risiko tinggi pada klaim individual. Penjelasan lokal penting karena daftar klaim berisiko perlu dapat ditelusuri, terutama jika hasil sistem digunakan sebagai dasar awal dalam proses verifikasi.
+
+\emph{Local explanation} membantu menjawab pertanyaan mengapa klaim tertentu diprioritaskan. Misalnya, penjelasan lokal dapat menunjukkan bahwa skor risiko dipengaruhi oleh kombinasi biaya per hari, \emph{severity level}, jumlah diagnosis sekunder, histori layanan, atau fitur lain yang relevan. Namun, penjelasan lokal tetap merupakan interpretasi model, bukan keputusan audit final.
+
+\section{Artefak Keluaran Sistem}\label{artefak-keluaran-sistem}
+
+Keluaran sistem dalam penelitian ini mencakup beberapa artefak. Pertama, \emph{winner info}, yaitu informasi mengenai branch fitur terbaik, model pemenang, fitur yang digunakan, dan threshold final. Kedua, \emph{branch features}, yaitu dokumentasi fitur pada setiap branch seleksi. Ketiga, \emph{threshold analysis}, yaitu hasil evaluasi berbagai threshold pada data validation. Keempat, \emph{final metrics}, yaitu metrik evaluasi model final pada data test. Kelima, \emph{top-risk claims}, yaitu daftar klaim dengan skor risiko tertinggi yang dapat digunakan sebagai prioritas verifikasi. Keenam, \emph{interpretability report}, yaitu hasil \emph{feature importance}, SHAP, PDP, dan LIME. Ketujuh, artefak pendukung seperti \emph{data quality report}, \emph{drift report}, dan \emph{calibration metrics} jika digunakan dalam analisis akhir.
+
+Artefak tersebut disimpan agar hasil penelitian dapat ditelusuri dan digunakan dalam pembahasan Bab 4. Dengan adanya artefak ini, proses penelitian tidak hanya menghasilkan model, tetapi juga dokumentasi yang mendukung evaluasi, interpretasi, dan pelaporan hasil secara sistematis.
+
+\section{Batas Interpretasi Metodologis}\label{batas-interpretasi-metodologis}
+
+Untuk menjaga konsistensi akademik, terdapat beberapa batas interpretasi yang perlu ditegaskan. Pertama, pseudo-label merupakan label proksi berbasis anomali, bukan label \emph{fraud} final. Kedua, supervised learning digunakan untuk mempelajari pola klaim yang konsisten dengan pseudo-label, bukan untuk membuktikan \emph{fraud} aktual. Ketiga, jika terdapat tumpang tindih antara fitur pembentuk pseudo-label dan fitur prediksi, performa model harus ditafsirkan secara hati-hati karena sebagian performa dapat mencerminkan kemampuan model merekonstruksi pola pelabelan. Keempat, threshold adalah ambang operasional untuk prioritas verifikasi, bukan batas kebenaran \emph{fraud}. Kelima, interpretabilitas digunakan untuk menjelaskan kontribusi fitur terhadap skor risiko, bukan sebagai bukti kausal atau keputusan audit final.
+
+Dengan batasan tersebut, metodologi penelitian tetap berada dalam tema \emph{fraud detection}, tetapi secara ilmiah diposisikan sebagai deteksi indikasi risiko dan prioritas verifikasi klaim. Keputusan akhir mengenai status \emph{fraud} tetap memerlukan proses verifikasi, audit, dan penilaian pihak berwenang.
