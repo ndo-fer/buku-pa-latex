@@ -1,10 +1,5 @@
 %============================================================
 % LAMPIRAN
-% Lampiran berisi informasi penunjang seperti data yang cukup
-% banyak, datasheet, pembuktian matematis, dan lain-lain.
-% Lampiran dapat berupa tabel, gambar, worksheet, atau foto.
-% Jika lembar lampiran lebih besar dari ukuran buku, dapat
-% dilipat agar tidak melebihi batas ukuran buku.
 %============================================================
 \cleardoublepage
 \appendix
@@ -13,15 +8,101 @@
 \chapter*{LAMPIRAN}
 \renewcommand{\thesection}{\Alph{section}}
 
-Lampiran berisi informasi yang menunjang bahasan dalam Buku Proyek Akhir, seperti data
-yang cukup banyak, \textit{datasheet}, pembuktian matematis, dan lain-lain. Lampiran
-dapat berupa tabel, gambar, \textit{worksheet}, foto, dan lain-lain. Jika lembaran
-lampiran lebih besar dari batas ukuran buku proyek akhir, lembar lampiran dapat dilipat
-sehingga tidak melebihi batas ukuran buku.
+Lampiran ini berisi ringkasan data dictionary dan artefak penunjang metodologi yang digunakan dalam penelitian. Isi lampiran disusun untuk memperjelas asal-usul data, peran variabel, serta pemisahan fungsi fitur pada tahap pseudo-labeling dan supervised prediction. Ringkasan ini berasal dari dokumen data dictionary yang memetakan struktur data kepesertaan, diagnosis sekunder, FKRTL, FKTP kapitasi, dan FKTP nonkapitasi.
 
-% ── Contoh: Judul Lampiran ───────────────────────────────────
-% \section{Judul Lampiran A}
-% Isi lampiran A di sini.
+\section{Ringkasan Sumber Data}
 
-% \section{Judul Lampiran B}
-% Isi lampiran B di sini.
+\begin{longtable}[]{@{}p{0.22\columnwidth}p{0.25\columnwidth}p{0.14\columnwidth}p{0.33\columnwidth}@{}}
+\caption{Ringkasan Sumber Data pada Data Dictionary}\label{tab:lampiran-sumber-data}\\
+\toprule
+\textbf{Dataset} & \textbf{Sumber File} & \textbf{Jumlah Kolom} & \textbf{Peran dalam Penelitian} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Dataset} & \textbf{Sumber File} & \textbf{Jumlah Kolom} & \textbf{Peran dalam Penelitian} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Kepesertaan & \texttt{2015202401\_kepesertaan.csv} & 20 & Master data peserta untuk membentuk fitur demografis, status peserta, kelas rawat, segmen peserta, dan lokasi domisili. \\
+Diagnosis sekunder & \texttt{202405\_diagnosissekunder.csv} & 4 & Data diagnosis penyerta yang digunakan untuk menangkap kompleksitas klinis dan pengaruh diagnosis sekunder terhadap tingkat keparahan klaim. \\
+FKRTL & \texttt{202403\_fkrtl.csv} & 57 & Tabel transaksi utama klaim rumah sakit dan pusat integrasi claim-centric. \\
+FKTP kapitasi & \texttt{202402\_fktpkapitasi.csv} & 28 & Riwayat layanan FKTP yang digunakan untuk membentuk konteks rujukan dan histori layanan sebelum klaim FKRTL. \\
+FKTP nonkapitasi & \texttt{202404\_nonkapitasi.csv} & 22 & Riwayat layanan berbayar di luar kapitasi yang digunakan untuk membentuk fitur frekuensi dan biaya layanan sebelumnya. \\
+\end{longtable}
+
+\section{Pemetaan Variabel Kunci}
+
+\begin{longtable}[]{@{}p{0.20\columnwidth}p{0.26\columnwidth}p{0.16\columnwidth}p{0.32\columnwidth}@{}}
+\caption{Contoh Variabel Kunci dari Data Dictionary}\label{tab:lampiran-variabel-kunci}\\
+\toprule
+\textbf{Sumber} & \textbf{Variabel Mapped} & \textbf{Tipe} & \textbf{Fungsi Analitis} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Sumber} & \textbf{Variabel Mapped} & \textbf{Tipe} & \textbf{Fungsi Analitis} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Kepesertaan & \texttt{id\_peserta} & String & Kunci penghubung peserta antar tabel dan dasar pembentukan histori layanan. \\
+Kepesertaan & \texttt{tanggal\_lahir}, \texttt{jenis\_kelamin} & Date/String & Membentuk fitur demografis dan validasi kewajaran klinis. \\
+Kepesertaan & \texttt{kelas\_rawat}, \texttt{segmen\_kepesertaan}, \texttt{status\_kepesertaan} & String & Menangkap konteks administratif peserta. \\
+Diagnosis sekunder & \texttt{id\_klaim\_kunjungan} & String & Kunci relasional untuk menggabungkan diagnosis sekunder ke klaim FKRTL. \\
+Diagnosis sekunder & \texttt{kode\_diagnosis\_sekunder}, \texttt{grup\_diagnosis\_sekunder} & String & Menggambarkan kompleksitas diagnosis penyerta. \\
+FKRTL & \texttt{id\_klaim\_kunjungan} & String & Kunci utama klaim FKRTL dan unit analisis claim-centric. \\
+FKRTL & \texttt{tanggal\_masuk}, \texttt{tanggal\_pulang} & Date & Dasar pembentukan lama rawat dan kontrol urutan waktu. \\
+FKRTL & \texttt{severity\_level}, \texttt{kode\_inacbg}, \texttt{jenis\_inacbg} & String & Menangkap hasil grouping dan tingkat kompleksitas klaim. \\
+FKRTL & \texttt{tarif\_inacbg\_dasar}, \texttt{total\_tarif\_diajukan}, \texttt{total\_tarif\_disetujui} & Numeric & Menangkap pola biaya dan selisih komponen tarif. \\
+FKRTL & \texttt{kode\_special\_cmg\_*}, \texttt{biaya\_special\_cmg\_*} & String/Numeric & Mengidentifikasi komponen top-up atau biaya tambahan di luar paket dasar. \\
+FKTP kapitasi & \texttt{id\_kunjungan\_fktp}, \texttt{tanggal\_kunjungan}, \texttt{status\_pulang\_fktp} & String/Date & Menangkap histori layanan dan pola rujukan sebelum klaim FKRTL. \\
+FKTP nonkapitasi & \texttt{id\_klaim\_nonkapitasi}, \texttt{tanggal\_layanan}, \texttt{jenis\_tindakan\_nk} & String/Date & Menangkap histori layanan tambahan dan potensi pola klaim berulang. \\
+\end{longtable}
+
+\section{Pemetaan Feature Space Pseudo-Labeling dan Supervised Prediction}
+
+\begin{longtable}[]{@{}p{0.26\columnwidth}p{0.36\columnwidth}p{0.32\columnwidth}@{}}
+\caption{Pemisahan Peran Fitur dalam Pipeline}\label{tab:lampiran-feature-space}\\
+\toprule
+\textbf{Tahap} & \textbf{Kelompok Fitur} & \textbf{Fungsi} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Tahap} & \textbf{Kelompok Fitur} & \textbf{Fungsi} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Pseudo-labeling & Fitur numerik biaya, lama rawat, severity, diagnosis sekunder, histori FKTP/nonkapitasi, dan rasio turunan & Membentuk sinyal anomali awal menggunakan Isolation Forest. \\
+Supervised prediction & Fitur administratif, demografis, klinis, biaya, diagnosis, histori layanan, dan fitur hasil seleksi branch & Mempelajari pola prioritas risiko berdasarkan pseudo-label sebagai target proksi. \\
+Threshold tuning & Skor probabilitas atau skor risiko dari model final & Mengubah skor menjadi daftar klaim yang diprioritaskan untuk verifikasi. \\
+Interpretabilitas & Fitur pada model final & Menjelaskan faktor yang berkontribusi terhadap skor risiko, baik secara global maupun lokal. \\
+\end{longtable}
+
+Pemisahan peran fitur pada Tabel \ref{tab:lampiran-feature-space} penting karena pseudo-label dan supervised prediction memiliki fungsi metodologis yang berbeda. Fitur pada tahap pseudo-labeling digunakan untuk membentuk target proksi berbasis anomali, sedangkan fitur pada tahap supervised prediction digunakan untuk mempelajari pola prioritas risiko terhadap target tersebut. Jika terdapat fitur yang beririsan, hasil model perlu ditafsirkan secara hati-hati karena sebagian performa dapat mencerminkan kemampuan model merekonstruksi pola pembentukan pseudo-label.
+
+\section{Ringkasan Vektor Risiko dari Data Dictionary}
+
+\begin{longtable}[]{@{}p{0.24\columnwidth}p{0.35\columnwidth}p{0.35\columnwidth}@{}}
+\caption{Contoh Vektor Risiko yang Terdokumentasi dalam Data Dictionary}\label{tab:lampiran-vektor-risiko}\\
+\toprule
+\textbf{Vektor Risiko} & \textbf{Contoh Sinyal Data} & \textbf{Interpretasi Aman dalam Penelitian} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Vektor Risiko} & \textbf{Contoh Sinyal Data} & \textbf{Interpretasi Aman dalam Penelitian} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Upcoding & Perubahan diagnosis, prosedur, severity level, atau komponen tarif yang menghasilkan nilai klaim lebih tinggi & Indikasi risiko yang perlu diverifikasi, bukan bukti fraud final. \\
+Phantom billing & Klaim berulang, rujukan tidak wajar, status peserta tidak sesuai, atau klaim dengan pola identitas yang mencurigakan & Sinyal anomali administratif yang memerlukan pemeriksaan lebih lanjut. \\
+Manipulasi rujukan & Pola rujukan FKTP ke FKRTL yang tidak wajar berdasarkan lokasi, jenis faskes, diagnosis, atau status pulang & Sinyal prioritas audit terhadap pola rujukan. \\
+Duplikasi klaim & Klaim nonkapitasi berulang pada layanan atau diagnosis yang seharusnya memiliki frekuensi terbatas & Indikasi pola klaim berulang yang perlu ditinjau. \\
+Unbundling atau top-up tidak wajar & Penggunaan special CMG atau biaya tambahan di luar paket dasar & Indikasi risiko pada komponen biaya tambahan, bukan penetapan kesalahan final. \\
+Prolonged stay dan readmission & Lama rawat atau kunjungan ulang yang tidak wajar terhadap pola umum & Sinyal risiko operasional/klinis yang perlu dikaji bersama konteks medis. \\
+\end{longtable}
+
+\section{Contoh Artefak Analisis yang Didukung Lampiran}
+
+Lampiran ini mendukung beberapa artefak analisis yang digunakan dalam Bab 3 dan Bab 4, antara lain: pemetaan sumber data ke fitur model, pemisahan feature space untuk pseudo-labeling dan supervised prediction, pembacaan vektor risiko dari data dictionary, serta dasar interpretasi fitur pada hasil SHAP dan LIME. Seluruh artefak tersebut tetap dibaca sebagai dukungan analitis untuk prioritas verifikasi klaim, bukan sebagai dasar tunggal untuk menetapkan status fraud final.
