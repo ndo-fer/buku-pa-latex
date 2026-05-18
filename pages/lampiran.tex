@@ -6,7 +6,19 @@
 \addcontentsline{toc}{chapter}{LAMPIRAN}
 
 \chapter*{LAMPIRAN}
+
+% Penomoran lampiran: tabel/gambar tampil sebagai A.1, A.2, dst.
+% Ini mencegah caption lampiran tampil sebagai "Tabel .1" pada Daftar Tabel.
+\setcounter{section}{0}
+\setcounter{table}{0}
+\setcounter{figure}{0}
 \renewcommand{\thesection}{\Alph{section}}
+\renewcommand{\thetable}{\thesection.\arabic{table}}
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+\makeatletter
+\@addtoreset{table}{section}
+\@addtoreset{figure}{section}
+\makeatother
 
 Lampiran ini berisi ringkasan data dictionary dan artefak penunjang metodologi yang digunakan dalam penelitian. Isi lampiran disusun untuk memperjelas asal-usul data, peran variabel, serta pemisahan fungsi fitur pada tahap pseudo-labeling dan supervised prediction. Ringkasan ini berasal dari dokumen data dictionary yang memetakan struktur data kepesertaan, diagnosis sekunder, FKRTL, FKTP kapitasi, dan FKTP nonkapitasi.
 
