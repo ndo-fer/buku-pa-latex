@@ -254,6 +254,8 @@ Berdasarkan Tabel \ref{tab:final-metrics-test}, model final menghasilkan nilai R
 
 Namun, interpretasi hasil tersebut harus dibatasi. Nilai metrik yang tinggi tidak membuktikan bahwa model telah mendeteksi \emph{fraud} aktual secara final, karena target evaluasi yang digunakan adalah pseudo-label. Hasil ini lebih tepat dipahami sebagai bukti bahwa model sangat konsisten dalam mempelajari pola yang terkandung dalam pseudo-label. Jika terdapat overlap antara fitur pembentuk pseudo-label dan fitur prediksi supervised, sebagian performa dapat mencerminkan target reconstruction atau rekonstruksi pola pelabelan.
 
+Konfigurasi final XGBoost dengan branch VIF dipertahankan sebagai hasil operasional terhadap target pseudo-label, sedangkan potensi overlap antara fitur pembentuk pseudo-label dan fitur prediksi tetap diakui sebagai keterbatasan metodologis yang memerlukan validasi lebih lanjut.
+
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{media/media/image17.png}
@@ -304,35 +306,35 @@ PDP digunakan untuk melihat pola hubungan rata-rata antara fitur dominan dan pro
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{media/media/image22.png}
-  \caption{PDP \texttt{tarif\_grouping}}
+  \caption{PDP tarif\_grouping}
   \label{fig:pdp-tarif-grouping-bab4}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{media/media/image23.png}
-  \caption{PDP \texttt{nonkap\_hist\_total\_amount\_before}}
+  \caption{PDP nonkap\_hist\_total\_amount\_before}
   \label{fig:pdp-nonkap-total-bab4}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{media/media/image24.png}
-  \caption{PDP \texttt{nonkap\_hist\_count\_before}}
+  \caption{PDP nonkap\_hist\_count\_before}
   \label{fig:pdp-nonkap-count-bab4}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{media/media/image25.png}
-  \caption{PDP \texttt{tarif\_disetujui}}
+  \caption{PDP tarif\_disetujui}
   \label{fig:pdp-tarif-disetujui-bab4}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{media/media/image26.png}
-  \caption{PDP \texttt{nonkap\_hist\_mean\_amount\_before}}
+  \caption{PDP nonkap\_hist\_mean\_amount\_before}
   \label{fig:pdp-nonkap-mean-bab4}
 \end{figure}
 
